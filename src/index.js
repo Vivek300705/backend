@@ -2,6 +2,7 @@
 import connect_db from "./db/index.js";
 // require('dotenv').config({path: './env'})
 import dotenv from "dotenv";
+import app from "./app.js"
 
 dotenv.config(
     {
@@ -12,22 +13,22 @@ dotenv.config(
 
 
 connect_db()
-.then(()=>{
-app.on("Error",(error)=>{
-    console.error("Server error",error)
-    throw error;
-    process.exit(1)
- 
-})
+    .then(() => {
+        app.on("Error", (error) => {
+            console.error("Server error", error)
+            throw error;
+            process.exit(1)
 
-    app.listen(process.env.port||8000 ,()=>{
-        console.log(`Server is running on port ${process.env.port}`)
+        })
+
+        app.listen(process.env.port || 8000, () => {
+            console.log(`Server is running on port ${process.env.port}`)
+        })
     })
-})
-.catch((err)=>{
-console.log("MongoDB connection failed",err)
+    .catch((err) => {
+        console.log("MongoDB connection failed", err)
 
-})
+    })
 
 
 
