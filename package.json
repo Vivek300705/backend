@@ -21,6 +21,7 @@
     "mongoose": "^8.7.0",
     "mongoose-aggregate-paginate-v2": "^1.1.2",
     "multer": "^1.4.5-lts.1",
+    "multiparty": "^4.2.3",
     "prettier": "^3.3.3"
   },
   "devDependencies": {
