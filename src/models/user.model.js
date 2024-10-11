@@ -28,9 +28,9 @@ const userSchema = new mongoose.Schema({
         type: String, // cloudinary url
         required: false,
     },
-    // coverimage: {
-    //     type: String,
-    // },
+    covermage: {
+        type: String,
+    },
     watchHistory: [{ // Changed to an array of ObjectIds
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Video',
