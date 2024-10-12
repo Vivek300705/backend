@@ -47,35 +47,27 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function(next) {
-    if (this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    if (!this.isModified("password")) return next(); // Only hash if password is new or modified
+    this.password = await bcrypt.hash(this.password, 10); // Hash the password
     next();
 });
 
 userSchema.methods.isPasswordCorrect = async function(password) {
-    return await bcrypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.password); // Compare provided password with hashed password
 };
 
-userSchema.methods.generateAccessToken = async function() {
-    return jwt.sign({
-        _id: this._id,
-        email: this.email,
-        username: this.username,
-        fullname: this.fullname,
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+
+userSchema.methods.generateAccessToken = function () {
+    const expiresIn = "1h"; // Ensure this is valid
+    return jwt.sign({ _id: this._id }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: expiresIn,
     });
 };
 
-userSchema.methods.generateRefreshToken = async function() {
-    return jwt.sign({
-        _id: this._id,
-    },
-    process.env.REFRESH_TOKEN_SECRET,
-    {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+userSchema.methods.generateRefreshToken = function () {
+    const expiresIn = "30d"; // Ensure this is valid
+    return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: expiresIn,
     });
 };
 
