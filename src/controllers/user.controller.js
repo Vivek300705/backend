@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import uploadCloudinary from "../utils/cloudinary.js";
 import apiResponse from "../utils/apiResponse.js";
 import bcrypt from "bcrypt"
+import { jwt } from "jsonwebtoken";
 
 // Generate Access and Refresh Token
 const generateAccessAndRefreshToken = async (userId) => {
@@ -175,8 +176,61 @@ export const logoutUser = asyncHandler(async (req, res) => {
         );
 });
 
+const refreshAccessToken = asyncHandler(async(req, res) => {
+    const incomingRefreshToken =req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new ApiError("Refresh token is required", 401);
+    }
+try {
+    const decodedToken=jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+    )
+    
+    const user=await User.findById(decodedToken?._id)
+    
+    if (!user) {
+        throw new ApiError("User not found", 404);
+    }
+    
+    if (incomingRefreshToken !== user.refreshToken){
+        throw new ApiError("Invalid refresh token", 401);
+    }
+    
+    const options={
+        httpOnly: true,
+        secure: true,
+    }
+    
+    const{accessToken,newrefreshToken}=await generateAccessAndRefreshToken(user._id)
+    
+    return res.status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",newrefreshToken,options)
+    .json(
+        new apiResponse(
+            200,
+            {
+                // user: user.toObject({ getters: true }),
+                accessToken,
+                newrefreshToken
+            },
+            "User's access token refreshed successfully"
+        )
+     );
+} catch (error) {
+    throw new ApiError(401,error?.message||"invalid refresh token")
+}
+
+
+
+});
+
+
+
 export default {
     registerUser,
     loginUser,
     logoutUser,
+    refreshAccessToken,
 };
